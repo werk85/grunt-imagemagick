@@ -100,8 +100,7 @@ var ResizeCommand={
   context:undefined,
   im:undefined,
   init:function(pfrom,pto,pprops,pcallback,pcontext){
-    
-    this.props=Object.create(pprops);
+    this.props=pprops;
     this.props.srcPath=pfrom;
     this.props.dstPath=pto;
     this.callback=pcallback;
@@ -109,6 +108,7 @@ var ResizeCommand={
     this.im=require('node-imagemagick');
 
     grunt.log.write('resizing:'+this.props.srcPath+"...\n");
+    console.log(this.props);
     this.im.resize(this.props,proxy(this.complete,this));
   },
   complete:function(err){
@@ -116,10 +116,10 @@ var ResizeCommand={
     if (err !== undefined && err !== null) {
       if (this.context.data.fatals === true) {
         grunt.warn(err);
-	  } else {
-	    grunt.log.write('error: '+err+"\n");
-	  }
-	}
+    } else {
+      grunt.log.write('error: '+err+"\n");
+    }
+  }
     this.callback.apply(this.context,[this,true]);
   }
 };
@@ -148,10 +148,10 @@ var ConvertCommand={
     if (err !== undefined && err !== null) {
       if (this.context.data.fatals === true) {
         grunt.warn(err);
-	  } else {
-	    grunt.log.write('error: '+err+"\n");
-	  }
-	}
+    } else {
+      grunt.log.write('error: '+err+"\n");
+    }
+  }
     this.callback.apply(this.context,[this,true]);
   }
 };
@@ -231,11 +231,16 @@ module.exports = function(grunt) {
     }
 
     for(i=0;i<fls.length;i++){
+      var fileName = fls[i].substr(this.data.from.length);
+      if (this.data.props && this.data.props.format) {
+        fileName = fileName.replace(/.(\w+)$/i, '.' + this.data.props.format);
+      }
+      console.log(fileName);
       cmd=Object.create(ResizeCommand);
       cmds.push(cmd);
       cmd.init(
         fls[i],
-        this.data.to+fls[i].substr(this.data.from.length), // replace folder
+        this.data.to+fileName, // replace folder
         this.data.props,
         onCmdComplete,
         this
